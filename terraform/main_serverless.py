@@ -19,8 +19,12 @@ class ServerlessStack(TerraformStack):
 
         account_id = DataAwsCallerIdentity(self, "acount_id").account_id
         
-        bucket = S3Bucket()
+        bucket = S3Bucket(
+            self, "bucket",
+            bucket_prefix=""
+        )
 
+        # NE PAS TOUCHER !!!!
         S3BucketCorsConfiguration(
             self, "cors",
             bucket=bucket.id,
@@ -31,12 +35,35 @@ class ServerlessStack(TerraformStack):
             )]
             )
 
-        dynamo_table = DynamodbTable()
+        dynamo_table = DynamodbTable(
+            self, "DynamodDB-table",
+            name= "",
+            hash_key="",
+            range_key="",
+            attribute=[
+                DynamodbTableAttribute(name="",type="S" ),
+                DynamodbTableAttribute(name="",type="S" ),
+            ],
+            billing_mode="PROVISIONED",
+            read_capacity=5,
+            write_capacity=5
+        )
 
         code = TerraformAsset()
 
-        lambda_function = LambdaFunction()
+        lambda_function = LambdaFunction(
+            self, "lambda",
+            function_name="",
+            runtime="python3.10",
+            memory_size=128,
+            timeout=60,
+            role=f"",
+            filename= code.path,
+            handler="",
+            environment={"variables":{}}
+        )
 
+        # NE PAS TOUCHER !!!!
         permission = LambdaPermission(
             self, "lambda_permission",
             action="lambda:InvokeFunction",
@@ -48,6 +75,7 @@ class ServerlessStack(TerraformStack):
             depends_on=[lambda_function, bucket]
         )
 
+        # NE PAS TOUCHER !!!!
         notification = S3BucketNotification(
             self, "notification",
             lambda_function=[S3BucketNotificationLambdaFunction(
