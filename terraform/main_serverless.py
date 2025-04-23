@@ -10,7 +10,7 @@ from cdktf_cdktf_provider_aws.data_aws_caller_identity import DataAwsCallerIdent
 from cdktf_cdktf_provider_aws.s3_bucket import S3Bucket
 from cdktf_cdktf_provider_aws.s3_bucket_cors_configuration import S3BucketCorsConfiguration, S3BucketCorsConfigurationCorsRule
 from cdktf_cdktf_provider_aws.s3_bucket_notification import S3BucketNotification, S3BucketNotificationLambdaFunction
-from cdktf_cdktf_provider_aws.dynamodb_table import DynamodbTable, DynamodbTableAttribute
+from cdktf_cdktf_provider_aws.dynamodb_table import DynamodbTable, DynamodbTableAttribute, DynamodbTableGlobalSecondaryIndex
 
 class ServerlessStack(TerraformStack):
     def __init__(self, scope: Construct, id: str):
@@ -21,7 +21,9 @@ class ServerlessStack(TerraformStack):
         
         bucket = S3Bucket(
             self, "bucket",
-            bucket_prefix=""
+            bucket_prefix="s3_bucket",
+            acl="private",
+            force_destroy=True,
         )
 
         # NE PAS TOUCHER !!!!
@@ -37,16 +39,26 @@ class ServerlessStack(TerraformStack):
 
         dynamo_table = DynamodbTable(
             self, "DynamodDB-table",
-            name= "",
-            hash_key="",
-            range_key="",
+            name= "postagram",
+            hash_key="PK",
+            range_key="SK",
             attribute=[
-                DynamodbTableAttribute(name="",type="S" ),
-                DynamodbTableAttribute(name="",type="S" ),
+                DynamodbTableAttribute(name="PK",type="S" ),
+                DynamodbTableAttribute(name="SK",type="S" ),
             ],
             billing_mode="PROVISIONED",
             read_capacity=5,
-            write_capacity=5
+            write_capacity=5,
+            global_secondary_index=[
+                DynamodbTableGlobalSecondaryIndex(
+                    name="InvertedIndex",
+                    hash_key="PK",
+                    range_key="SK",
+                    projection_type="ALL",
+                    write_capacity=5,
+                    read_capacity=5,
+                )
+            ],
         )
 
         code = TerraformAsset()
