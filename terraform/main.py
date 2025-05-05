@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from constructs import Construct
 from cdktf import App, TerraformStack
+from main_serverless import ServerlessStack
 
 
 class MyStack(TerraformStack):
@@ -11,6 +12,7 @@ class MyStack(TerraformStack):
 
 
 app = App()
-MyStack(app, "ter")
+# MyStack(app, "ter")
+ServerlessStack(app, "cdktf_serverless")
 
 app.synth()

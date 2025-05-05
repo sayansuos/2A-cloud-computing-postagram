@@ -45,7 +45,7 @@ class ServerStack(TerraformStack):
     def __init__(self, scope: Construct, id: str):
         super().__init__(scope, id)
 
-        # account_id = l'id de votre compte
+        account_id = DataAwsCallerIdentity(self, "acount_id").account_id
         # security_group = le security groupe pour vos instances EC2
         account_id, security_group, subnets, default_vpc = self.infra_base()
         
