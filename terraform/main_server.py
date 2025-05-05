@@ -46,18 +46,43 @@ class ServerStack(TerraformStack):
         super().__init__(scope, id)
 
         account_id = DataAwsCallerIdentity(self, "acount_id").account_id
-        # security_group = le security groupe pour vos instances EC2
+        security_group = SecurityGroup(
+            self, "sg-tp",
+            ingress=[
+                SecurityGroupIngress(
+                    from_port=22,
+                    to_port=22,
+                    cidr_blocks=["0.0.0.0/0"],
+                    protocol="TCP",
+                ),
+                SecurityGroupIngress(
+                    from_port=80,
+                    to_port=80,
+                    cidr_blocks=["0.0.0.0/0"],
+                    protocol="TCP"
+                )
+            ],
+            egress=[
+                SecurityGroupEgress(
+                    from_port=0,
+                    to_port=0,
+                    cidr_blocks=["0.0.0.0/0"],
+                    protocol="-1"
+                )
+            ]
+            )
+        
         account_id, security_group, subnets, default_vpc = self.infra_base()
         
         launch_template = LaunchTemplate(
             self, "launch template",
-            image_id=""
-            instance_type=", # le type de l'instance
-            vpc_security_group_ids = [],
-            key_name="",
-            user_data=,
+            image_id="ami-080e1f13689e07408",
+            instance_type="t2.micro", # le type de l'instance
+            vpc_security_group_ids = [security_group.name],
+            key_name="vockey",
+            user_data=user_data,
             tags={"Name":"TP noté"},
-            iam_instance_profile={"name":"LabInstanceProfile"}
+            iam_instance_profile={"name":"LabInstanceProfile", "arn": f"arn:aws:iam::{account_id}:role/LabRole"}
             )
     
 
