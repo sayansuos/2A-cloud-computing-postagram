@@ -14,6 +14,6 @@ class MyStack(TerraformStack):
 
 app = App()
 # MyStack(app, "ter")
-# ServerlessStack(app, "cdktf_serverless")
+ServerlessStack(app, "cdktf_serverless")
 ServerStack(app, "cdktf_server")
 app.synth()

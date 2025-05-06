@@ -134,6 +134,28 @@ async def get_all_posts(user: Union[str, None] = None):
             for item in result:
                 res.append(json.dumps(item))
 
+    for raw_item in result:
+        title = raw_item["title"]
+        body = raw_item["body"]
+        user = raw_item["user"]
+
+        url = s3_client.generate_presigned_url(
+        Params={
+            "Bucket": bucket,
+            "Key": f"{user}/{title}/{}",
+            },
+        ClientMethod='get_object'
+        )
+
+        item = {
+            "title": title,
+            "body": body,
+            "user": ruser,
+            "image": url,
+
+
+        }
+
     # Doit retourner une liste de posts
     return res
 

@@ -24,7 +24,7 @@ from cdktf_cdktf_provider_aws.data_aws_caller_identity import (
 import base64
 
 # Mettez ici le nom du bucket S3 crée dans la partie serverless
-bucket = "postagram-bucket-ensai"
+bucket = "postagram-bucket-ensai20250506165208853700000001"
 
 # Mettez ici le nom de la table dynamoDB créée dans la partie serverless
 dynamo_table = "postagram"
@@ -58,33 +58,33 @@ class ServerStack(TerraformStack):
     def __init__(self, scope: Construct, id: str):
         super().__init__(scope, id)
 
-        account_id = DataAwsCallerIdentity(self, "acount_id").account_id
-        security_group = SecurityGroup(
-            self,
-            "sg-tp",
-            ingress=[
-                SecurityGroupIngress(
-                    from_port=22,
-                    to_port=22,
-                    cidr_blocks=["0.0.0.0/0"],
-                    protocol="TCP",
-                ),
-                SecurityGroupIngress(
-                    from_port=80,
-                    to_port=80,
-                    cidr_blocks=["0.0.0.0/0"],
-                    protocol="TCP",
-                ),
-            ],
-            egress=[
-                SecurityGroupEgress(
-                    from_port=0,
-                    to_port=0,
-                    cidr_blocks=["0.0.0.0/0"],
-                    protocol="-1",
-                )
-            ],
-        )
+        # account_id = DataAwsCallerIdentity(self, "account_id").account_id
+        # security_group = SecurityGroup(
+        #     self,
+        #     "sg-tp",
+        #     ingress=[
+        #         SecurityGroupIngress(
+        #             from_port=22,
+        #             to_port=22,
+        #             cidr_blocks=["0.0.0.0/0"],
+        #             protocol="TCP",
+        #         ),
+        #         SecurityGroupIngress(
+        #             from_port=80,
+        #             to_port=80,
+        #             cidr_blocks=["0.0.0.0/0"],
+        #             protocol="TCP",
+        #         ),
+        #     ],
+        #     egress=[
+        #         SecurityGroupEgress(
+        #             from_port=0,
+        #             to_port=0,
+        #             cidr_blocks=["0.0.0.0/0"],
+        #             protocol="-1",
+        #         )
+        #     ],
+        # )
 
         account_id, security_group, subnets, default_vpc = self.infra_base()
 

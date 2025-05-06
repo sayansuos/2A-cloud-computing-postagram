@@ -3,7 +3,7 @@ from botocore.config import Config
 from os import walk
 from data import data
 
-bucket = "postagram-lilianraphsayan1234"
+bucket = "postagram-bucket-ensai20250506165208853700000001"
 table = "postagram"
 
 # Create an S3 resource
