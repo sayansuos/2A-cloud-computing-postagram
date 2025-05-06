@@ -2,6 +2,7 @@
 from constructs import Construct
 from cdktf import App, TerraformStack
 from main_serverless import ServerlessStack
+from main_server import ServerStack
 
 
 class MyStack(TerraformStack):
@@ -13,6 +14,6 @@ class MyStack(TerraformStack):
 
 app = App()
 # MyStack(app, "ter")
-ServerlessStack(app, "cdktf_serverless")
-
+# ServerlessStack(app, "cdktf_serverless")
+ServerStack(app, "cdktf_server")
 app.synth()
