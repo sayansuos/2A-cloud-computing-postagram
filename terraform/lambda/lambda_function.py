@@ -34,10 +34,17 @@ def lambda_handler(event, context):
 
     # Récupération des résultats des labels
     labels = [label["Name"] for label in label_data["Labels"]]
+    logger.info(f"Labels detected : {labels}")
 
     # Mise à jour de la table dynamodb
     table.update_item(
-        Key={"user": user, "post": task_id},
-        UpdateExpression="SET labels = :labels",
+        Key={"user": "USER#" + user, "id": "POST#" + task_id},
+        UpdateExpression="SET label = :labels",
         ExpressionAttributeValues={":labels": labels},
+    )
+
+    table.update_item(
+        Key={"user": "USER#" + user, "id": "POST#" + task_id},
+        UpdateExpression="SET path = :path",
+        ExpressionAttributeValues={":path": key},
     )

@@ -79,11 +79,17 @@ async def post_a_post(
     logger.info(f"user : {authorization}")
 
     try:
+        str_id = f"{uuid.uuid4()}"
+
         data = table.put_item(
             Item={
-                "title": "POST#" + post.title,
+                "title": post.title,
                 "body": post.body,
                 "user": "USER#" + authorization,
+                "id": "POST#" + str_id,
+                "image": "",
+                "label": [],
+                "path": "",
             }
         )
     except (TypeError, ValueError) as e:
@@ -97,6 +103,7 @@ async def post_a_post(
 
 
 import json
+from createPresignedUrl import create_presigned_url
 
 
 @app.get("/posts")
@@ -108,53 +115,47 @@ async def get_all_posts(user: Union[str, None] = None):
     """
 
     res = []
-    if user:
-        logger.info(f"Récupération des postes de : {user}")
-        try:
+
+    try:
+        if user:
+            logger.info(f"Récupération des postes de : {user}")
             result = table.query(
                 Select="ALL_ATTRIBUTES",
-                KeyConditionExpression="PK = :pk",
+                KeyConditionExpression="#usr = :pk",
+                ExpressionAttributeNames={
+                    "#usr": "user"
+                },  # Define a placeholder for "user"
                 ExpressionAttributeValues={":pk": f"USER#{user}"},
             )
-        except Exception as e:
-            res = f"Erreur : les posts n'ont pas pu être trouvés. {e}"
         else:
-            result = result["Item"]
-            for item in result:
-                res.append(json.dumps(item))
-
-    else:
-        logger.info("Récupération de tous les postes")
-        try:
+            logger.info("Récupération de tous les postes")
             result = table.scan()
-        except Exception as e:
-            res = f"Erreur : les posts n'ont pas pu être trouvés. {e}"
-        else:
-            result = result["Item"]
-            for item in result:
-                res.append(json.dumps(item))
+            print(result)
 
-    for raw_item in result:
-        title = raw_item["title"]
-        body = raw_item["body"]
-        user = raw_item["user"]
+        result = result["Items"]
 
-        url = s3_client.generate_presigned_url(
-        Params={
-            "Bucket": bucket,
-            "Key": f"{user}/{title}/{}",
-            },
-        ClientMethod='get_object'
-        )
+        for raw_item in result:
+            post = raw_item["id"]
+            title = raw_item["title"]
+            body = raw_item["body"]
+            user = raw_item["user"]
+            image = create_presigned_url(object_name=raw_item["path"])
+            label = raw_item["label"]
 
-        item = {
-            "title": title,
-            "body": body,
-            "user": ruser,
-            "image": url,
+            item = {
+                "user": user,
+                "id": post,
+                "title": title,
+                "body": body,
+                "image": image,
+                "label": label,
+            }
 
+            res.append(item)
 
-        }
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des posts : {e}")
+        res = f"Les posts n'ont pas pu être trouvés. Détails : {e}"
 
     # Doit retourner une liste de posts
     return res

@@ -64,11 +64,11 @@ class ServerlessStack(TerraformStack):
             self,
             "DynamodDB-table",
             name="postagram",
-            hash_key="PK",
-            range_key="SK",
+            hash_key="user",
+            range_key="id",
             attribute=[
-                DynamodbTableAttribute(name="PK", type="S"),
-                DynamodbTableAttribute(name="SK", type="S"),
+                DynamodbTableAttribute(name="user", type="S"),
+                DynamodbTableAttribute(name="id", type="S"),
             ],
             billing_mode="PROVISIONED",
             read_capacity=5,
@@ -76,8 +76,8 @@ class ServerlessStack(TerraformStack):
             global_secondary_index=[
                 DynamodbTableGlobalSecondaryIndex(
                     name="InvertedIndex",
-                    hash_key="PK",
-                    range_key="SK",
+                    hash_key="user",
+                    range_key="id",
                     projection_type="ALL",
                     write_capacity=5,
                     read_capacity=5,
