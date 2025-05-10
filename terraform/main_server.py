@@ -24,7 +24,7 @@ from cdktf_cdktf_provider_aws.data_aws_caller_identity import (
 import base64
 
 # Mettez ici le nom du bucket S3 crée dans la partie serverless
-bucket = "postagram-bucket-ensai20250506165208853700000001"
+bucket = "postagram-bucket-ensai20250510222321853400000001"
 
 # Mettez ici le nom de la table dynamoDB créée dans la partie serverless
 dynamo_table = "postagram"
@@ -97,10 +97,7 @@ class ServerStack(TerraformStack):
             key_name="vockey",
             user_data=user_data,
             tags={"Name": "TP noté"},
-            iam_instance_profile={
-                "name": "LabInstanceProfile",
-                "arn": f"arn:aws:iam::{account_id}:role/LabRole",
-            },
+            iam_instance_profile={"name": "LabInstanceProfile"},
         )
 
         lb = Lb(

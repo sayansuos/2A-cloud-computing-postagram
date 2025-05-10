@@ -87,9 +87,6 @@ async def post_a_post(
                 "body": post.body,
                 "user": "USER#" + authorization,
                 "id": "POST#" + str_id,
-                "image": "",
-                "label": [],
-                "path": "",
             }
         )
     except (TypeError, ValueError) as e:
@@ -122,9 +119,7 @@ async def get_all_posts(user: Union[str, None] = None):
             result = table.query(
                 Select="ALL_ATTRIBUTES",
                 KeyConditionExpression="#usr = :pk",
-                ExpressionAttributeNames={
-                    "#usr": "user"
-                },  # Define a placeholder for "user"
+                ExpressionAttributeNames={"#usr": "user"},
                 ExpressionAttributeValues={":pk": f"USER#{user}"},
             )
         else:
@@ -135,21 +130,24 @@ async def get_all_posts(user: Union[str, None] = None):
         result = result["Items"]
 
         for raw_item in result:
-            post = raw_item["id"]
+            str_id = raw_item["id"]
             title = raw_item["title"]
             body = raw_item["body"]
             user = raw_item["user"]
-            image = create_presigned_url(object_name=raw_item["path"])
-            label = raw_item["label"]
+            path = raw_item.get("path", "")
 
             item = {
+                "id": str_id,
                 "user": user,
-                "id": post,
                 "title": title,
                 "body": body,
-                "image": image,
-                "label": label,
             }
+
+            if path:
+                image = create_presigned_url(object_name=path)
+                label = raw_item.get("labels", [])
+                item["image"] = image
+                item["labels"] = label
 
             res.append(item)
 
@@ -170,10 +168,39 @@ async def delete_post(
     logger.info(f"user: {authorization}")
 
     # Récupération des infos du poste
+    logger.info(f"Récupération du post: {post_id}")
+    result = table.query(
+        Select="ALL_ATTRIBUTES",
+        KeyConditionExpression="#usr = :pk AND #id = :id",
+        ExpressionAttributeNames={
+            "#usr": "user",
+            "#id": "id",
+        },
+        ExpressionAttributeValues={
+            ":pk": f"USER#{authorization}",
+            ":id": f"POST#{post_id}",
+        },
+    )
+
+    raw_item = result["Items"][0]
 
     # S'il y a une image on la supprime de S3
+    path = raw_item.get("path", "")
+    if path:
+        logger.info(f"Suppression de l'image sur S3: {bucket}/{path}")
+        try:
+            s3_client.delete_object(Bucket=bucket, Key=path)
+        except Exception as e:
+            print(f"Erreur lors de la suppression de l'image : {e}")
 
     # Suppression de la ligne dans la base dynamodb
+    logger.info("Suppression de la ligne dans la base dynamodb")
+    try:
+        item = table.delete_item(
+            Key={"user": f"USER#{authorization}", "id": f"POST#{post_id}"}
+        )
+    except Exception as e:
+        print(f"Erreur lors de la suppression de l'élément : {e}")
 
     # Retourne le résultat de la requête de suppression
     return item

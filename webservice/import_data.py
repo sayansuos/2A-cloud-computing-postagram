@@ -4,25 +4,18 @@ from uuid import uuid4
 from datetime import datetime
 from createPresignedUrl import create_presigned_url
 
-# S3 and DynamoDB Setup
-bucket = "postagram-bucket-ensai20250506165208853700000001"
+bucket = "postagram-bucket-ensai20250510222321853400000001"
 table_name = "postagram"
 
-# Initialize S3 and DynamoDB clients
 s3 = boto3.resource("s3")
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(table_name)
 
-# Path to the local folder with user data
-local_folder = "s3"  # Replace with the path to your local folder
 
-# Iterate through the directories and files
 with table.batch_writer() as batch:
-    for dirpath, dirnames, filenames in walk(local_folder):
-        if filenames:  # Only process directories that contain files
-            user = dirpath.split("/")[
-                1
-            ]  # Assuming the last part of the path is the user name
+    for dirpath, dirnames, filenames in walk("s3"):
+        if filenames:
+            user = dirpath.split("/")[1]
 
             for filename in filenames:
                 post_id = dirpath.split("/")[2]
@@ -37,14 +30,11 @@ with table.batch_writer() as batch:
                 # Construct metadata for DynamoDB (we're assuming body, label, and title might be added from your local data)
                 item = {
                     "user": "USER#" + user,
-                    "id": "POST#" + post_id,  # Use the unique post ID here
-                    "body": "",  # This should be filled with actual content (if available)
-                    "label": [],  # This should be filled with labels if available
-                    "title": "",  # Assuming the title is the file name, change if needed
-                    "path": s3_key,
+                    "id": "POST#" + post_id,
+                    "body": "",
+                    "title": "",
                 }
 
-                # Add the metadata item to DynamoDB
                 batch.put_item(Item=item)
 
                 print(

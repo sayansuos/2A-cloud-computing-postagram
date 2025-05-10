@@ -37,14 +37,16 @@ def lambda_handler(event, context):
     logger.info(f"Labels detected : {labels}")
 
     # Mise à jour de la table dynamodb
-    table.update_item(
-        Key={"user": "USER#" + user, "id": "POST#" + task_id},
-        UpdateExpression="SET label = :labels",
-        ExpressionAttributeValues={":labels": labels},
-    )
+    try:
+        table.update_item(
+            Key={"user": "USER#" + user, "id": "POST#" + task_id},
+            UpdateExpression="SET labels = :labels, #p = :path",
+            ExpressionAttributeValues={
+                ":labels": labels,
+                ":path": key,
+            },
+            ExpressionAttributeNames={"#p": "path"},
+        )
 
-    table.update_item(
-        Key={"user": "USER#" + user, "id": "POST#" + task_id},
-        UpdateExpression="SET path = :path",
-        ExpressionAttributeValues={":path": key},
-    )
+    except Exception as e:
+        logger.error(f"Error updating DynamoDB: {str(e)}")
